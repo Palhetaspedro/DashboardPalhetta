@@ -77,7 +77,7 @@ export default function Navbar() {
             letterSpacing: "-0.02em",
           }}
         >
-          palhetta
+          PalheTTa
         </span>
       </div>
 

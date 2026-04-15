@@ -86,8 +86,8 @@ export default function AuthPage() {
           >
             P
           </div>
-          <span style={{ fontWeight: 800, fontSize: 20, color: theme.textPrimary }}>
-            Palhetta
+          <span style={{ fontWeight: 800, fontSize: 40, color: theme.textPrimary }}>
+            PalheTTa
           </span>
         </div>
 
@@ -105,7 +105,7 @@ export default function AuthPage() {
         <p style={{ fontSize: 13, color: theme.textSecondary, margin: "0 0 24px" }}>
           {isLogin
             ? "Acesse sua conta para continuar"
-            : "Registre-se para comeÃ§ar a usar a plataforma"}
+            : "Registre-se para começar a usar a plataforma"}
         </p>
 
         {/* Error */}
@@ -257,7 +257,7 @@ export default function AuthPage() {
             marginBottom: 0,
           }}
         >
-          {isLogin ? "NÃ£o tem conta?" : "JÃ¡ tem conta?"}{" "}
+          {isLogin ? "Não tem conta?" : "Já tem conta?"}{" "}
           <button
             onClick={() => {
               setIsLogin(!isLogin);
@@ -278,24 +278,6 @@ export default function AuthPage() {
           </button>
         </p>
 
-        {/* Demo credentials */}
-        {isLogin && (
-          <div
-            style={{
-              marginTop: 20,
-              padding: "10px 14px",
-              borderRadius: 10,
-              background: theme.dark ? "rgba(139,92,246,0.08)" : "rgba(139,92,246,0.05)",
-              border: `1px solid ${theme.borderCol}`,
-              fontSize: 11.5,
-              color: theme.textSecondary,
-            }}
-          >
-            <strong style={{ color: theme.textPrimary }}>Demo:</strong> alex@email.com / 123456
-            <br />
-            Ou registre uma nova conta acima
-          </div>
-        )}
       </div>
     </div>
   );

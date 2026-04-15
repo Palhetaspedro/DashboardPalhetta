@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useApp, useTheme } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
 import { Card, SectionLabel, Button } from "../components/ui";
@@ -75,7 +75,23 @@ export default function SettingsPage() {
   // Profile fields
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
+  const [companyName, setCompanyName] = useState(user?.companyName ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
   const [profileMsg, setProfileMsg] = useState("");
+
+  // Avatar
+  const [avatar, setAvatar] = useState(user?.avatar ?? "");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   const toggle = (
     state: Record<string, boolean>,
@@ -86,7 +102,7 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setProfileMsg("");
     try {
-      await updateProfile({ name, phone });
+      await updateProfile({ name, phone, companyName, bio, avatar });
       setProfileMsg("Perfil atualizado!");
     } catch (err: any) {
       setProfileMsg(err.message);
@@ -154,13 +170,17 @@ export default function SettingsPage() {
       {/* Profile */}
       <Card>
         <SectionLabel>Perfil</SectionLabel>
+
+        {/* Avatar */}
         <div style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 18 }}>
           <div
+            onClick={() => fileRef.current?.click()}
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: 16,
-              background: "linear-gradient(135deg,#a78bfa,#60a5fa)",
+              width: 64,
+              height: 64,
+              borderRadius: 18,
+              overflow: "hidden",
+              background: avatar ? "transparent" : "linear-gradient(135deg,#a78bfa,#60a5fa)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -168,13 +188,27 @@ export default function SettingsPage() {
               fontWeight: 700,
               color: "white",
               boxShadow: "0 4px 16px rgba(124,58,237,0.3)",
+              cursor: "pointer",
+              border: `2px solid ${theme.borderCol}`,
+              position: "relative",
             }}
           >
-            {initial}
+            {avatar ? (
+              <img src={avatar} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initial
+            )}
           </div>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarFile} style={{ display: "none" }} />
           <div>
             <div style={{ fontWeight: 700, fontSize: 16, color: theme.textPrimary }}>{user.name}</div>
             <div style={{ fontSize: 12.5, color: theme.textSecondary, marginTop: 2 }}>{user.email} · {roleLabel} · {user.plan}</div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              style={{ background: "none", border: "none", color: "#7c3aed", fontSize: 12, cursor: "pointer", padding: 0, marginTop: 4, fontWeight: 600, fontFamily: "inherit" }}
+            >
+              Alterar foto
+            </button>
           </div>
         </div>
 
@@ -208,6 +242,52 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+        </div>
+
+        {/* Company name */}
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 11, color: theme.textSecondary, marginBottom: 4, letterSpacing: "0.04em" }}>NOME DA EMPRESA</div>
+          <input
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Ex: PalheTTa Store"
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: `1px solid ${theme.borderCol}`,
+              background: theme.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+              color: theme.textPrimary,
+              fontSize: 13,
+              fontFamily: "inherit",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        </div>
+
+        {/* Bio */}
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 11, color: theme.textSecondary, marginBottom: 4, letterSpacing: "0.04em" }}>BIO / SOBRE</div>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Conte um pouco sobre você ou sua empresa..."
+            rows={3}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: `1px solid ${theme.borderCol}`,
+              background: theme.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+              color: theme.textPrimary,
+              fontSize: 13,
+              fontFamily: "inherit",
+              outline: "none",
+              boxSizing: "border-box",
+              resize: "vertical",
+            }}
+          />
         </div>
 
         {profileMsg && (

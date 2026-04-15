@@ -9,6 +9,8 @@ export interface AuthUser {
   plan: string;
   avatar: string;
   phone: string;
+  companyName: string;
+  bio: string;
   active: boolean;
 }
 
@@ -45,6 +47,8 @@ async function fetchUser() {
     plan: profile.plan ?? "Grátis",
     avatar: profile.avatar ?? "",
     phone: profile.phone ?? "",
+    companyName: profile.companyName ?? "",
+    bio: profile.bio ?? "",
     active: profile.active ?? true,
   } as AuthUser;
 }
