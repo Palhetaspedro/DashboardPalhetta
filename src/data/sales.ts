@@ -48,6 +48,24 @@ export async function getSalesStats() {
   return { totalRevenue, totalSales, byStatus, monthlyRevenue };
 }
 
+export async function createSale(data: Omit<Sale, "id" | "created_at">) {
+  const { data: created, error } = await supabase
+    .from("sales")
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return { sale: created as Sale };
+}
+
+export async function deleteSale(id: string) {
+  const { error } = await supabase
+    .from("sales")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function updateSale(id: string, data: Record<string, any>) {
   const { data: updated, error } = await supabase
     .from("sales")

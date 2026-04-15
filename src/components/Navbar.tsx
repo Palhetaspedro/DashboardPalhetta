@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp, useTheme } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
+import { LogoNavbar } from "../components/Logo";
 
 const NAV_ITEMS: Record<string, { id: string; icon: string; label: string; roles?: string[] }[]> = {
   admin: [
@@ -11,9 +12,12 @@ const NAV_ITEMS: Record<string, { id: string; icon: string; label: string; roles
     { id: "settings",  icon: "⚙️",  label: "Ajustes"   },
   ],
   seller: [
-    { id: "dashboard", icon: "⊞", label: "Dashboard" },
-    { id: "orders",    icon: "📦", label: "Pedidos"   },
-    { id: "settings",  icon: "⚙️",  label: "Ajustes"   },
+    { id: "dashboard",   icon: "⊞", label: "Dashboard" },
+    { id: "seller-admin", icon: "📊", label: "Painel"    },
+    { id: "orders",      icon: "📦", label: "Pedidos"   },
+    { id: "products",    icon: "🛍️", label: "Produtos"  },
+    { id: "disputes",    icon: "⚖️",  label: "Disputas"  },
+    { id: "settings",    icon: "⚙️",  label: "Ajustes"   },
   ],
   buyer: [
     { id: "dashboard", icon: "⊞", label: "Dashboard" },
@@ -51,24 +55,7 @@ export default function Navbar() {
         style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
         onClick={() => setCurrentPage("dashboard")}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            background: "linear-gradient(135deg,#7c3aed,#3b82f6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 16,
-            color: "white",
-            fontWeight: 800,
-            boxShadow: "0 4px 12px rgba(124,58,237,0.35)",
-            userSelect: "none",
-          }}
-        >
-          P
-        </div>
+        <LogoNavbar dark={dark} />
         <span
           style={{
             fontWeight: 800,
@@ -77,7 +64,7 @@ export default function Navbar() {
             letterSpacing: "-0.02em",
           }}
         >
-          PalheTTa
+          Palhetta
         </span>
       </div>
 

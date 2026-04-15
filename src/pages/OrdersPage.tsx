@@ -5,6 +5,7 @@ import { Card, SectionLabel, Button, StatusBadge } from "../components/ui";
 import { OrderItem, SellerOrderItem } from "../components/OrderItem";
 import { OrderStatus } from "../data/mockData";
 import { getSales, updateSale, Sale } from "../data/sales";
+import CreateOrderModal from "../components/CreateOrderModal";
 
 const STATUS_TABS: { label: string; value: string }[] = [
   { label: "Todos",       value: ""        },
@@ -17,7 +18,7 @@ const STATUS_TABS: { label: string; value: string }[] = [
 ];
 
 export default function OrdersPage() {
-  const { mode } = useApp();
+  const { mode, showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
   const theme = useTheme();
   const { user } = useAuth();
   const isBuyer = mode === "buyer";
@@ -29,11 +30,16 @@ export default function OrdersPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    loadSales();
+  }, [filter, mode, user?.id]);
+
+  const loadSales = () => {
+    setLoading(true);
     getSales(filter || undefined)
       .then(({ sales: s }) => setSales(s))
       .catch((err: unknown) => setError(String(err)))
       .finally(() => setLoading(false));
-  }, [filter, mode, user?.id]);
+  };
 
   const filtered = sales.filter((o) =>
     o.product.toLowerCase().includes(search.toLowerCase()) ||
@@ -70,7 +76,7 @@ export default function OrdersPage() {
         </div>
         {error && <span style={{ color: "#f87171", fontSize: 13 }}>{error}</span>}
         {isBuyer && (
-          <Button variant="primary">＋ Novo Pedido</Button>
+          <Button variant="primary" onClick={openCreateOrder}>＋ Novo Pedido</Button>
         )}
       </div>
 
@@ -192,6 +198,13 @@ export default function OrdersPage() {
           </div>
         </Card>
       )}
+
+      {/* Create Order Modal */}
+      <CreateOrderModal
+        open={showCreateOrder}
+        onClose={closeCreateOrder}
+        onSuccess={loadSales}
+      />
     </div>
   );
 }

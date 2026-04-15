@@ -10,6 +10,9 @@ interface AppContextValue {
   toggleDark: () => void;
   currentPage: string;
   setCurrentPage: (p: string) => void;
+  openCreateOrder: () => void;
+  closeCreateOrder: () => void;
+  showCreateOrder: boolean;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -19,6 +22,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>("buyer");
   const [dark, setDark] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
 
   return (
     <AppContext.Provider
@@ -29,6 +33,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toggleDark: () => setDark((d) => !d),
         currentPage,
         setCurrentPage,
+        showCreateOrder,
+        openCreateOrder: () => setShowCreateOrder(true),
+        closeCreateOrder: () => setShowCreateOrder(false),
       }}
     >
       {children}

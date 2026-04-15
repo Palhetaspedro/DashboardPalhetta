@@ -7,17 +7,19 @@ import DisputesPage  from "./pages/DisputesPage";
 import ProductsPage  from "./pages/ProductsPage";
 import SettingsPage  from "./pages/SettingsPage";
 import AuthPage      from "./pages/AuthPage";
+import SellerAdminPage from "./pages/SellerAdminPage";
 
 // ─── Page router ──────────────────────────────────────────────────────────────
 function Router() {
   const { currentPage } = useApp();
 
   const pages: Record<string, JSX.Element> = {
-    dashboard: <DashboardPage />,
-    orders:    <OrdersPage    />,
-    disputes:  <DisputesPage  />,
-    products:  <ProductsPage  />,
-    settings:  <SettingsPage  />,
+    dashboard:    <DashboardPage    />,
+    orders:       <OrdersPage       />,
+    disputes:     <DisputesPage     />,
+    products:     <ProductsPage     />,
+    settings:     <SettingsPage     />,
+    "seller-admin": <SellerAdminPage />,
   };
 
   return pages[currentPage] ?? <DashboardPage />;

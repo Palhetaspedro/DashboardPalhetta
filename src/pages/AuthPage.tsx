@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../hooks/useApp";
+import { LogoFull } from "../components/Logo";
 
 export default function AuthPage() {
   const { login, register } = useAuth();
@@ -68,27 +69,8 @@ export default function AuthPage() {
         }}
       >
         {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: "linear-gradient(135deg,#7c3aed,#3b82f6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              color: "white",
-              fontWeight: 800,
-              boxShadow: "0 4px 12px rgba(124,58,237,0.35)",
-            }}
-          >
-            P
-          </div>
-          <span style={{ fontWeight: 800, fontSize: 40, color: theme.textPrimary }}>
-            PalheTTa
-          </span>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <LogoFull size={140} />
         </div>
 
         <h2

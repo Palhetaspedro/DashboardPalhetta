@@ -5,7 +5,7 @@ import { Button, EmojiThumb, StatusBadge } from "./ui";
 
 // ─── Buyer order row ──────────────────────────────────────────────────────────
 
-export function OrderItem({ order }: { order: Order }) {
+export function OrderItem({ order, onDelete }: { order: Order; onDelete?: () => void }) {
   const theme = useTheme();
   const [hov, setHov] = useState(false);
 
@@ -75,7 +75,11 @@ export function OrderItem({ order }: { order: Order }) {
 
       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
         <Button variant="outline" size="sm">Ver</Button>
-        <Button variant="outline" size="sm">↓</Button>
+        {onDelete && (
+          <Button variant="outline" size="sm" onClick={onDelete} style={{ color: "#f87171", borderColor: "rgba(248,113,113,0.3)" }}>
+            🗑
+          </Button>
+        )}
       </div>
     </div>
   );

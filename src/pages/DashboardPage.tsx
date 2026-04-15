@@ -7,9 +7,10 @@ import CountdownTimer from "../components/CountdownTimer";
 import { OrderItem, SellerOrderItem } from "../components/OrderItem";
 import { OrderStatus } from "../data/mockData";
 import { getSales, getSalesStats, Sale } from "../data/sales";
+import CreateOrderModal from "../components/CreateOrderModal";
 
 export default function DashboardPage() {
-  const { mode } = useApp();
+  const { mode, showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
   const theme = useTheme();
   const { user } = useAuth();
   const isBuyer = mode === "buyer";
@@ -19,6 +20,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    loadSales();
+  }, [mode, user?.id]);
+
+  const loadSales = () => {
     Promise.all([
       getSalesStats().catch(() => null),
       getSales().catch(() => ({ sales: [] })),
@@ -26,7 +31,7 @@ export default function DashboardPage() {
       setStats(s);
       setRecentSales((r?.sales ?? []).slice(0, 5));
     }).finally(() => setLoading(false));
-  }, [mode, user?.id]);
+  };
 
   if (loading) {
     return <div style={{ textAlign: "center", padding: 40, color: theme.textSecondary }}>Carregando...</div>;
@@ -163,6 +168,7 @@ export default function DashboardPage() {
             </p>
 
             <button
+              onClick={openCreateOrder}
               style={{
                 width: "100%",
                 padding: "11px 0",
@@ -247,6 +253,13 @@ export default function DashboardPage() {
           )}
         </div>
       </Card>
+
+      {/* Create Order Modal */}
+      <CreateOrderModal
+        open={showCreateOrder}
+        onClose={closeCreateOrder}
+        onSuccess={loadSales}
+      />
     </div>
   );
 }
