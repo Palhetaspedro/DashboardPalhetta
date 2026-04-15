@@ -1,6 +1,7 @@
 import { AppProvider, useApp, useTheme } from "./hooks/useApp";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import DashboardPage from "./pages/DashboardPage";
 import OrdersPage    from "./pages/OrdersPage";
 import DisputesPage  from "./pages/DisputesPage";
@@ -88,6 +89,8 @@ function Shell() {
         <Navbar />
         <Router />
       </div>
+
+      <Footer />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
