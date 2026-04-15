@@ -3,6 +3,12 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../hooks/useApp";
 import { LogoFull } from "../components/Logo";
 
+const ROLE_OPTIONS: { value: "buyer" | "seller" | "admin"; label: string; desc: string; icon: string }[] = [
+  { value: "buyer", label: "Comprador", desc: "Crie e gerencie pedidos", icon: "🛒" },
+  { value: "seller", label: "Vendedor", desc: "Aceite e entregue pedidos", icon: "🏪" },
+  { value: "admin", label: "Administrador", desc: "Acesso completo ao sistema", icon: "🛡️" },
+];
+
 export default function AuthPage() {
   const { login, register } = useAuth();
   const theme = useTheme();
@@ -11,6 +17,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"buyer" | "seller" | "admin">("buyer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +35,7 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
-        await register(name, email, password, phone);
+        await register(name, email, password, phone, role);
       }
     } catch (err: any) {
       setError(err.message || "Erro ao autenticar");
@@ -203,6 +210,45 @@ export default function AuthPage() {
                   outline: "none",
                 }}
               />
+            </div>
+          )}
+
+          {!isLogin && (
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 600, color: theme.textSecondary, display: "block", marginBottom: 8 }}>
+                Tipo de Conta
+              </label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {ROLE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRole(opt.value)}
+                    style={{
+                      flex: 1,
+                      padding: "10px 8px",
+                      borderRadius: 10,
+                      border: `2px solid ${role === opt.value ? "#7c3aed" : theme.borderCol}`,
+                      background: role === opt.value
+                        ? "rgba(124,58,237,0.12)"
+                        : theme.dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                      color: theme.textPrimary,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      textAlign: "center",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <div style={{ fontSize: 18, marginBottom: 4 }}>{opt.icon}</div>
+                    <div>{opt.label}</div>
+                    <div style={{ fontSize: 10, color: theme.textSecondary, fontWeight: 400, marginTop: 2 }}>
+                      {opt.desc}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

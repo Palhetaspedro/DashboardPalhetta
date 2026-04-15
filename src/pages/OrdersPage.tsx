@@ -18,10 +18,10 @@ const STATUS_TABS: { label: string; value: string }[] = [
 ];
 
 export default function OrdersPage() {
-  const { mode, showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
+  const { showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
   const theme = useTheme();
   const { user } = useAuth();
-  const isBuyer = mode === "buyer";
+  const isBuyerView = user?.role === "buyer";
 
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     loadSales();
-  }, [filter, mode, user?.id]);
+  }, [filter, user?.id, user?.role]);
 
   const loadSales = () => {
     setLoading(true);
@@ -66,21 +66,21 @@ export default function OrdersPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: theme.textPrimary, margin: 0, letterSpacing: "-0.02em" }}>
-            {isBuyer ? "Meus Pedidos" : "Pedidos Disponíveis"}
+            {isBuyerView ? "Meus Pedidos" : "Pedidos Disponíveis"}
           </h1>
           <p style={{ fontSize: 13, color: theme.textSecondary, margin: "4px 0 0" }}>
-            {isBuyer
+            {isBuyerView
               ? `${filtered.length} pedidos encontrados`
               : `${filtered.length} pedidos aguardando`}
           </p>
         </div>
         {error && <span style={{ color: "#f87171", fontSize: 13 }}>{error}</span>}
-        {isBuyer && (
+        {isBuyerView && (
           <Button variant="primary" onClick={openCreateOrder}>＋ Novo Pedido</Button>
         )}
       </div>
 
-      {isBuyer ? (
+      {isBuyerView ? (
         <>
           {/* Search + Filters */}
           <Card style={{ padding: "14px 18px" }}>

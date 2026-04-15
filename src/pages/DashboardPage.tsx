@@ -10,10 +10,10 @@ import { getSales, getSalesStats, Sale } from "../data/sales";
 import CreateOrderModal from "../components/CreateOrderModal";
 
 export default function DashboardPage() {
-  const { mode, showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
+  const { showCreateOrder, openCreateOrder, closeCreateOrder } = useApp();
   const theme = useTheme();
   const { user } = useAuth();
-  const isBuyer = mode === "buyer";
+  const isBuyerView = user?.role === "buyer";
 
   const [stats, setStats] = useState<any>(null);
   const [recentSales, setRecentSales] = useState<Sale[]>([]);
@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadSales();
-  }, [mode, user?.id]);
+  }, [user?.id, user?.role]);
 
   const loadSales = () => {
     Promise.all([
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <SectionLabel>{isBuyer ? "Gasto Mensal" : "Receita Mensal"}</SectionLabel>
+              <SectionLabel>{isBuyerView ? "Gasto Mensal" : "Receita Mensal"}</SectionLabel>
               <h2
                 style={{
                   fontSize: 34,
@@ -90,7 +90,7 @@ export default function DashboardPage() {
                 fontSize: 22,
               }}
             >
-              {isBuyer ? "🛍️" : "📦"}
+              {isBuyerView ? "🛍️" : "📦"}
             </div>
           </div>
 
@@ -124,20 +124,20 @@ export default function DashboardPage() {
 
         {/* Progress widget */}
         <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
-          <SectionLabel>{isBuyer ? "Score de Compra" : "Desempenho"}</SectionLabel>
-          <ProgressCircle pct={isBuyer ? 78 : 91} />
+          <SectionLabel>{isBuyerView ? "Score de Compra" : "Desempenho"}</SectionLabel>
+          <ProgressCircle pct={isBuyerView ? 78 : 91} />
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 12.5, color: theme.textPrimary, fontWeight: 600 }}>
-              {isBuyer ? "Comprador Ouro" : "Vendedor Elite"}
+              {isBuyerView ? "Comprador Ouro" : "Vendedor Elite"}
             </div>
             <div style={{ fontSize: 11, color: theme.textSecondary, marginTop: 2 }}>
-              Top {isBuyer ? "22%" : "9%"} na plataforma
+              Top {isBuyerView ? "22%" : "9%"} na plataforma
             </div>
           </div>
         </Card>
 
         {/* CTA / countdown */}
-        {isBuyer ? (
+        {isBuyerView ? (
           <div
             style={{
               background: "linear-gradient(145deg,#7c3aed,#2563eb)",
@@ -228,7 +228,7 @@ export default function DashboardPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div style={{ margin: 0 }}>
             <SectionLabel>
-              {isBuyer ? "Pedidos Recentes" : "Pedidos Disponíveis"}
+              {isBuyerView ? "Pedidos Recentes" : "Pedidos Disponíveis"}
             </SectionLabel>
           </div>
           <Button variant="outline" size="sm">Ver Todos →</Button>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {recentSales.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 0", color: theme.textSecondary, fontSize: 14 }}>
-              Nenhum pedido ainda. {isBuyer ? "Faça seu primeiro pedido!" : "Aguardando pedidos..."}
+              Nenhum pedido ainda. {isBuyerView ? "Faça seu primeiro pedido!" : "Aguardando pedidos..."}
             </div>
           ) : (
             recentSales.map((o) => (

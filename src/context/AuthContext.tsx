@@ -18,7 +18,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string, role?: "admin" | "seller" | "buyer") => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Record<string, any>) => Promise<void>;
 }
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw new Error(error.message);
   };
 
-  const register = async (name: string, email: string, password: string, phone?: string) => {
+  const register = async (name: string, email: string, password: string, phone?: string, role?: "admin" | "seller" | "buyer") => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
         name,
         phone: phone ?? "",
-        role: "buyer",
+        role: role ?? "buyer",
         plan: "Grátis",
         active: true,
       });

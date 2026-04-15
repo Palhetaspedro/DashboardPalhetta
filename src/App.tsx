@@ -63,6 +63,8 @@ function Shell() {
         fontFamily: "'DM Sans', 'Outfit', system-ui, sans-serif",
         color: theme.textPrimary,
         transition: "background 0.4s ease",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Noise texture overlay */}
@@ -84,13 +86,16 @@ function Shell() {
           maxWidth: 1200,
           margin: "0 auto",
           padding: "0 24px 60px",
+          flex: 1,
         }}
       >
         <Navbar />
         <Router />
       </div>
 
-      <Footer />
+      <div style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
+        <Footer />
+      </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');

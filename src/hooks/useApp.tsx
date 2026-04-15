@@ -1,13 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export type Mode = "buyer" | "seller";
-
 interface AppContextValue {
-  mode: Mode;
-  setMode: (m: Mode) => void;
-  dark: boolean;
-  toggleDark: () => void;
   currentPage: string;
   setCurrentPage: (p: string) => void;
   openCreateOrder: () => void;
@@ -15,31 +9,31 @@ interface AppContextValue {
   showCreateOrder: boolean;
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
+// ─── App Context ──────────────────────────────────────────────────────────────
 const AppContext = createContext<AppContextValue | null>(null);
 
+// ─── Theme Context ────────────────────────────────────────────────────────────
+const ThemeContext = createContext<{ dark: boolean; toggleDark: () => void } | null>(null);
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<Mode>("buyer");
-  const [dark, setDark] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [dark, setDark] = useState(false);
 
   return (
-    <AppContext.Provider
-      value={{
-        mode,
-        setMode,
-        dark,
-        toggleDark: () => setDark((d) => !d),
-        currentPage,
-        setCurrentPage,
-        showCreateOrder,
-        openCreateOrder: () => setShowCreateOrder(true),
-        closeCreateOrder: () => setShowCreateOrder(false),
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    <ThemeContext.Provider value={{ dark, toggleDark: () => setDark((d) => !d) }}>
+      <AppContext.Provider
+        value={{
+          currentPage,
+          setCurrentPage,
+          showCreateOrder,
+          openCreateOrder: () => setShowCreateOrder(true),
+          closeCreateOrder: () => setShowCreateOrder(false),
+        }}
+      >
+        {children}
+      </AppContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
@@ -51,7 +45,9 @@ export function useApp() {
 
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 export function useTheme() {
-  const { dark } = useApp();
+  const themeCtx = useContext(ThemeContext);
+  if (!themeCtx) throw new Error("useTheme must be used inside AppProvider");
+  const { dark } = themeCtx;
 
   return {
     dark,
@@ -68,6 +64,12 @@ export function useTheme() {
       ? "0 4px 24px rgba(0,0,0,0.4)"
       : "0 4px 24px rgba(139,92,246,0.07)",
   } as const;
+}
+
+export function useDarkMode() {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useDarkMode must be used inside AppProvider");
+  return ctx;
 }
 
 // ─── Shared style builders ────────────────────────────────────────────────────

@@ -1,23 +1,24 @@
 import { useState } from "react";
-import { useApp, useTheme } from "../hooks/useApp";
+import { useApp, useTheme, useDarkMode } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
 import { LogoNavbar } from "../components/Logo";
 
-const NAV_ITEMS: Record<string, { id: string; icon: string; label: string; roles?: string[] }[]> = {
+const NAV_ITEMS: Record<string, { id: string; icon: string; label: string }[]> = {
   admin: [
-    { id: "dashboard", icon: "⊞", label: "Dashboard" },
-    { id: "orders",    icon: "📦", label: "Pedidos"   },
-    { id: "disputes",  icon: "⚖️",  label: "Disputas"  },
-    { id: "products",  icon: "🛍️", label: "Produtos"  },
-    { id: "settings",  icon: "⚙️",  label: "Ajustes"   },
+    { id: "dashboard",    icon: "⊞", label: "Dashboard" },
+    { id: "seller-admin", icon: "📊", label: "Painel"    },
+    { id: "orders",       icon: "📦", label: "Pedidos"   },
+    { id: "products",     icon: "🛍️", label: "Produtos"  },
+    { id: "disputes",     icon: "⚖️",  label: "Disputas"  },
+    { id: "settings",     icon: "⚙️",  label: "Ajustes"   },
   ],
   seller: [
-    { id: "dashboard",   icon: "⊞", label: "Dashboard" },
+    { id: "dashboard",    icon: "⊞", label: "Dashboard" },
     { id: "seller-admin", icon: "📊", label: "Painel"    },
-    { id: "orders",      icon: "📦", label: "Pedidos"   },
-    { id: "products",    icon: "🛍️", label: "Produtos"  },
-    { id: "disputes",    icon: "⚖️",  label: "Disputas"  },
-    { id: "settings",    icon: "⚙️",  label: "Ajustes"   },
+    { id: "orders",       icon: "📦", label: "Pedidos"   },
+    { id: "products",     icon: "🛍️", label: "Produtos"  },
+    { id: "disputes",     icon: "⚖️",  label: "Disputas"  },
+    { id: "settings",     icon: "⚙️",  label: "Ajustes"   },
   ],
   buyer: [
     { id: "dashboard", icon: "⊞", label: "Dashboard" },
@@ -28,7 +29,8 @@ const NAV_ITEMS: Record<string, { id: string; icon: string; label: string; roles
 };
 
 export default function Navbar() {
-  const { mode, setMode, toggleDark, dark, currentPage, setCurrentPage } = useApp();
+  const { toggleDark, dark } = useDarkMode();
+  const { currentPage, setCurrentPage } = useApp();
   const { user, logout } = useAuth();
   const theme = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);

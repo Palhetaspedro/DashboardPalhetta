@@ -8,7 +8,7 @@ export default function Footer() {
       style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 40%, #3b82f6 100%)",
         width: "100%",
-        margin: "48px 0 0",
+        margin: 0,
         padding: "32px 40px",
         position: "relative",
         overflow: "hidden",

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { useApp, useTheme } from "../hooks/useApp";
+import { useTheme, useDarkMode } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
 import { Card, SectionLabel, Button } from "../components/ui";
 import { supabase } from "../lib/supabase";
@@ -56,7 +56,7 @@ const PRIVACY_SETTINGS: SettingRow[] = [
 ];
 
 export default function SettingsPage() {
-  const { dark, toggleDark, mode, setMode } = useApp();
+  const { dark, toggleDark } = useDarkMode();
   const theme = useTheme();
   const { user, updateProfile, logout } = useAuth();
 
@@ -368,50 +368,6 @@ export default function SettingsPage() {
           <Toggle on={dark} onToggle={toggleDark} />
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "14px 0",
-            borderTop: `1px solid ${theme.borderCol}`,
-            marginTop: 8,
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: theme.textPrimary }}>Modo Padrão</div>
-            <div style={{ fontSize: 12, color: theme.textSecondary, marginTop: 2 }}>Alterne entre Comprador e Vendedor</div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              background: theme.dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-              borderRadius: 10,
-              padding: 3,
-              gap: 2,
-            }}
-          >
-            {(["buyer", "seller"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                style={{
-                  background: mode === m ? "linear-gradient(135deg,#7c3aed,#3b82f6)" : "transparent",
-                  color: mode === m ? "white" : theme.textSecondary,
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "5px 14px",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                {m === "buyer" ? "Comprador" : "Vendedor"}
-              </button>
-            ))}
-          </div>
-        </div>
       </Card>
 
       {/* Notifications */}
