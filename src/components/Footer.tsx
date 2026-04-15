@@ -7,9 +7,8 @@ export default function Footer() {
     <footer
       style={{
         background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 40%, #3b82f6 100%)",
-        borderRadius: "18px 18px 0 0",
-        padding: "32px 24px 24px",
-        marginTop: 48,
+        maxWidth: 1200,
+        margin: "48px auto 0",
         position: "relative",
         overflow: "hidden",
       }}
@@ -25,14 +24,7 @@ export default function Footer() {
         }}
       />
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
         {/* Top section - brand + links */}
         <div
           style={{
