@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useApp, useTheme, fmt } from "../hooks/useApp";
-import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Card, SectionLabel, Button, StatusBadge } from "../components/ui";
 import { OrderItem, SellerOrderItem } from "../components/OrderItem";
 import { OrderStatus } from "../data/mockData";
+import { getSales, updateSale, Sale } from "../data/sales";
 
 const STATUS_TABS: { label: string; value: string }[] = [
   { label: "Todos",       value: ""        },
@@ -15,20 +15,6 @@ const STATUS_TABS: { label: string; value: string }[] = [
   { label: "Entregue",    value: "delivered"  },
   { label: "Cancelado",   value: "cancelled"  },
 ];
-
-interface Sale {
-  id: string;
-  product: string;
-  specs: string;
-  amount: number;
-  status: OrderStatus | "pending" | "delivered" | "refunded";
-  thumb: string;
-  created_at: string;
-  seller_id: string;
-  buyer_id: string;
-  seller_name?: string;
-  buyer_name?: string;
-}
 
 export default function OrdersPage() {
   const { mode } = useApp();
@@ -43,10 +29,9 @@ export default function OrdersPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api
-      .getSales(filter || undefined)
-      .then(({ sales: s }) => setSales(s as any))
-      .catch((err: any) => setError(err.message))
+    getSales(filter || undefined)
+      .then(({ sales: s }) => setSales(s))
+      .catch((err: unknown) => setError(String(err)))
       .finally(() => setLoading(false));
   }, [filter, mode, user?.id]);
 
@@ -57,10 +42,10 @@ export default function OrdersPage() {
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      await api.updateSale(id, { status: newStatus });
+      await updateSale(id, { status: newStatus });
       setSales((prev) => prev.map((s) => s.id === id ? { ...s, status: newStatus as any } : s));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(String(err));
     }
   };
 

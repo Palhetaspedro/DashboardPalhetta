@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import api from "../services/api";
+import { supabase } from "../lib/supabase";
 
 export interface AuthUser {
   id: string;
@@ -23,42 +23,94 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function fetchUser() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) return null;
+
+  return {
+    id: user.id,
+    name: profile.name ?? user.email ?? "",
+    email: user.email ?? "",
+    role: (profile.role as AuthUser["role"]) ?? "buyer",
+    plan: profile.plan ?? "Grátis",
+    avatar: profile.avatar ?? "",
+    phone: profile.phone ?? "",
+    active: profile.active ?? true,
+  } as AuthUser;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if already logged in on mount
   useEffect(() => {
-    if (api.isAuthenticated()) {
-      api
-        .getMe()
-        .then(({ user }) => setUser(user))
-        .catch(() => api.clearTokens())
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    fetchUser()
+      .then((u) => setUser(u))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUser().then((u) => setUser(u));
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { user } = await api.login(email, password);
-    setUser(user);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
   };
 
   const register = async (name: string, email: string, password: string, phone?: string) => {
-    const { user } = await api.register(name, email, password, phone);
-    setUser(user);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name, phone } },
+    });
+    if (error) throw new Error(error.message);
+    if (data.user) {
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        name,
+        phone: phone ?? "",
+        role: "buyer",
+        plan: "Grátis",
+        active: true,
+      });
+    }
   };
 
   const logout = async () => {
-    await api.logout();
-    setUser(null);
+    await supabase.auth.signOut();
   };
 
   const updateProfile = async (data: Record<string, any>) => {
-    if (!user) return;
-    const { user: updated } = await api.updateUser(user.id, data);
-    setUser(updated);
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    if (!authUser) return;
+
+    const { error } = await supabase.from("profiles").update(data).eq("id", authUser.id);
+    if (error) throw new Error(error.message);
+
+    const updated = await fetchUser();
+    if (updated) setUser(updated);
   };
 
   return (

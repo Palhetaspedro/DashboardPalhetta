@@ -1,18 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "../hooks/useApp";
-import { api } from "../services/api";
 import { Card, SectionLabel, Button, StatusBadge } from "../components/ui";
 import { DisputeStatus } from "../data/mockData";
-
-interface Dispute {
-  id: string;
-  product: string;
-  status: DisputeStatus;
-  created_at: string;
-  reason: string;
-  user_name: string;
-  order_product?: string;
-}
+import { getDisputes, createDispute, deleteDispute, Dispute } from "../data/disputes";
 
 function DisputeCard({ d, onDelete }: { d: Dispute; onDelete: (id: string) => void }) {
   const theme = useTheme();
@@ -44,7 +34,7 @@ function DisputeCard({ d, onDelete }: { d: Dispute; onDelete: (id: string) => vo
           <div style={{ fontWeight: 700, fontSize: 14, color: theme.textPrimary }}>{d.order_product || "Disputa"}</div>
           <div style={{ fontSize: 12, color: theme.textSecondary, marginTop: 3 }}>#{d.id.slice(0, 8)}</div>
         </div>
-        <StatusBadge status={d.status} />
+        <StatusBadge status={d.status as any} />
       </div>
 
       <div
@@ -80,18 +70,18 @@ export default function DisputesPage() {
   const [newReason, setNewReason] = useState("");
 
   useEffect(() => {
-    api.getDisputes()
-      .then(({ disputes: d }) => setDisputes(d as Dispute[]))
-      .catch((err: any) => setError(err.message))
+    getDisputes()
+      .then(({ disputes: d }) => setDisputes(d))
+      .catch((err: unknown) => setError(String(err)))
       .finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id: string) => {
     try {
-      await api.deleteDispute(id);
+      await deleteDispute(id);
       setDisputes((prev) => prev.filter((d) => d.id !== id));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(String(err));
     }
   };
 
@@ -101,12 +91,12 @@ export default function DisputesPage() {
       return;
     }
     try {
-      const { dispute } = await api.createDispute({ reason: newReason });
+      const { dispute } = await createDispute({ reason: newReason });
       setDisputes((prev) => [dispute, ...prev]);
       setNewReason("");
       setError("");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(String(err));
     }
   };
 

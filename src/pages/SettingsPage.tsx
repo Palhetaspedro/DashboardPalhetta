@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useApp, useTheme } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
 import { Card, SectionLabel, Button } from "../components/ui";
-import { api } from "../services/api";
+import { supabase } from "../lib/supabase";
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
@@ -101,12 +101,13 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await api.updatePassword(user.id, currentPw, newPw);
+      const { error } = await supabase.auth.updateUser({ password: newPw });
+      if (error) throw error;
       setPwMsg("Senha atualizada com sucesso");
       setCurrentPw("");
       setNewPw("");
-    } catch (err: any) {
-      setPwMsg(err.message);
+    } catch (err: unknown) {
+      setPwMsg(String(err));
     }
   };
 

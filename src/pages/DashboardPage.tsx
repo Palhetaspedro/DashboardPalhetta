@@ -1,24 +1,12 @@
 import { useState, useEffect } from "react";
 import { useApp, useTheme, fmt } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
-import { api } from "../services/api";
 import { Card, SectionLabel, Button } from "../components/ui";
 import ProgressCircle from "../components/ProgressCircle";
 import CountdownTimer from "../components/CountdownTimer";
 import { OrderItem, SellerOrderItem } from "../components/OrderItem";
 import { OrderStatus } from "../data/mockData";
-
-interface Sale {
-  id: string;
-  product: string;
-  specs: string;
-  amount: number;
-  status: string;
-  thumb: string;
-  created_at: string;
-  seller_name?: string;
-  buyer_name?: string;
-}
+import { getSales, getSalesStats, Sale } from "../data/sales";
 
 export default function DashboardPage() {
   const { mode } = useApp();
@@ -32,11 +20,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      api.getSalesStats().catch(() => null),
-      api.getSales().catch(() => ({ sales: [] })),
+      getSalesStats().catch(() => null),
+      getSales().catch(() => ({ sales: [] })),
     ]).then(([s, r]) => {
       setStats(s);
-      setRecentSales((r?.sales ?? []).slice(0, 5) as Sale[]);
+      setRecentSales((r?.sales ?? []).slice(0, 5));
     }).finally(() => setLoading(false));
   }, [mode, user?.id]);
 
@@ -232,9 +220,11 @@ export default function DashboardPage() {
       {/* ── ORDERS ─────────────────────────────────────────────── */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <SectionLabel style={{ margin: 0 }}>
-            {isBuyer ? "Pedidos Recentes" : "Pedidos Disponíveis"}
-          </SectionLabel>
+          <div style={{ margin: 0 }}>
+            <SectionLabel>
+              {isBuyer ? "Pedidos Recentes" : "Pedidos Disponíveis"}
+            </SectionLabel>
+          </div>
           <Button variant="outline" size="sm">Ver Todos →</Button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
