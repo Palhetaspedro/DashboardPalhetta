@@ -7,6 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 ** Conta disponivel:** Email:palhetateste@gmail.com | Senha:teste123456
+
 ** Live Demo:** [dashboardpalhetta.vercel.app](https://dashboardpalhetta.vercel.app)  
 ** Repositório:** [github.com/Palhetaspedro/DashboardPalhetta](https://github.com/Palhetaspedro/DashboardPalhetta)
 
