@@ -6,7 +6,7 @@
 ![Stack](https://img.shields.io/badge/stack-React%20%7C%20TypeScript%20%7C%20Supabase-7c3aed?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-** Conta disponivel:| Email:palhetateste@gmail.com | Senha:teste123456
+** Conta Vendedor disponivel:| Email:palhetateste@gmail.com | Senha:teste123456
 
 ** Live Demo: [dashboardpalhetta.vercel.app](https://dashboardpalhetta.vercel.app)  
 ** Repositório: [github.com/Palhetaspedro/DashboardPalhetta](https://github.com/Palhetaspedro/DashboardPalhetta)
