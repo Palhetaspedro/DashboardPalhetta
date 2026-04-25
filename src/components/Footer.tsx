@@ -12,6 +12,8 @@ export default function Footer() {
         padding: "32px 40px",
         position: "relative",
         overflow: "hidden",
+        zIndex: 0,
+        isolation: "isolate",
       }}
     >
       {/* Decorative overlay matching logo style */}
@@ -111,7 +113,7 @@ export default function Footer() {
                 Redes Sociais
               </div>
               <div style={{ display: "flex", gap: 16 }}>
-                {/* GitHub Link  */}
+                {/* GitHub Link */}
                 <a
                   href="https://github.com/Palhetaspedro"
                   target="_blank"

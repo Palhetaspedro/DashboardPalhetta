@@ -5,7 +5,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "seller" | "buyer";
+  role: "seller" | "buyer";
   plan: string;
   avatar: string;
   phone: string;
