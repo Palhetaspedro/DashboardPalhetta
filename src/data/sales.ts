@@ -1,78 +1,144 @@
 import { supabase } from "../lib/supabase";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 export interface Sale {
   id: string;
   product: string;
   specs: string;
   amount: number;
-  status: string;
+  status: "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
   thumb: string;
+  seller_id: string | null;
+  buyer_id: string | null;
+  seller_name: string;
+  buyer_name: string;
   created_at: string;
-  seller_id: string;
+  updated_at: string;
+}
+
+export interface CreateSaleInput {
+  product: string;
+  specs: string;
+  amount: number;
+  status?: Sale["status"];
+  thumb?: string;
+  seller_id?: string;
   buyer_id: string;
   seller_name?: string;
   buyer_name?: string;
 }
 
-export async function getSales(status?: string) {
-  let q = supabase.from("sales").select("*").order("created_at", { ascending: false });
-  if (status) q = q.eq("status", status);
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
-  return { sales: data as Sale[] };
+export interface UpdateSaleInput {
+  status?: Sale["status"];
+  seller_id?: string;
+  seller_name?: string;
+  thumb?: string;
 }
 
-export async function getSalesStats() {
-  const { data, error } = await supabase
+// ─── GET SALES ────────────────────────────────────────────────────────────────
+
+export async function getSales(status?: string): Promise<{ sales: Sale[] }> {
+  let query = supabase
     .from("sales")
-    .select("amount, status, created_at")
+    .select("*")
     .order("created_at", { ascending: false });
 
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+
   if (error) throw new Error(error.message);
 
-  const sales = data ?? [];
-  const totalRevenue = sales.reduce((sum, s) => sum + (s.amount ?? 0), 0);
-  const totalSales = sales.length;
-
-  const byStatus: { status: string; count: number }[] = [];
-  const statusMap: Record<string, number> = {};
-  for (const s of sales) {
-    statusMap[s.status] = (statusMap[s.status] || 0) + 1;
-  }
-  for (const [status, count] of Object.entries(statusMap)) {
-    byStatus.push({ status, count });
-  }
-
-  const monthlyRevenue: { month: string; total: number }[] = [];
-
-  return { totalRevenue, totalSales, byStatus, monthlyRevenue };
+  return { sales: (data as Sale[]) ?? [] };
 }
 
-export async function createSale(data: Omit<Sale, "id" | "created_at">) {
-  const { data: created, error } = await supabase
+// ─── GET SALE BY ID ───────────────────────────────────────────────────────────
+
+export async function getSaleById(id: string): Promise<Sale> {
+  const { data, error } = await supabase
     .from("sales")
-    .insert(data)
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as Sale;
+}
+
+// ─── CREATE SALE ──────────────────────────────────────────────────────────────
+
+export async function createSale(input: CreateSaleInput): Promise<Sale> {
+  const { data, error } = await supabase
+    .from("sales")
+    .insert({
+      product:     input.product,
+      specs:       input.specs       ?? "",
+      amount:      input.amount,
+      status:      input.status      ?? "pending",
+      thumb:       input.thumb       ?? "",
+      seller_id:   input.seller_id   || null,
+      buyer_id:    input.buyer_id,
+      seller_name: input.seller_name ?? "",
+      buyer_name:  input.buyer_name  ?? "",
+    })
     .select()
     .single();
+
   if (error) throw new Error(error.message);
-  return { sale: created as Sale };
+
+  return data as Sale;
 }
 
-export async function deleteSale(id: string) {
+// ─── UPDATE SALE ──────────────────────────────────────────────────────────────
+
+export async function updateSale(id: string, input: UpdateSaleInput): Promise<Sale> {
+  const { data, error } = await supabase
+    .from("sales")
+    .update(input)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as Sale;
+}
+
+// ─── DELETE SALE ──────────────────────────────────────────────────────────────
+
+export async function deleteSale(id: string): Promise<void> {
   const { error } = await supabase
     .from("sales")
     .delete()
     .eq("id", id);
+
   if (error) throw new Error(error.message);
 }
 
-export async function updateSale(id: string, data: Record<string, any>) {
-  const { data: updated, error } = await supabase
+// ─── GET SALES SUMMARY (para dashboard) ──────────────────────────────────────
+
+export async function getSalesSummary(): Promise<{
+  total: number;
+  pending: number;
+  delivered: number;
+  revenue: number;
+}> {
+  const { data, error } = await supabase
     .from("sales")
-    .update(data)
-    .eq("id", id)
-    .select()
-    .single();
+    .select("amount, status");
+
   if (error) throw new Error(error.message);
-  return { sale: updated as Sale };
+
+  const sales = (data as Pick<Sale, "amount" | "status">[]) ?? [];
+
+  return {
+    total:     sales.length,
+    pending:   sales.filter((s) => s.status === "pending").length,
+    delivered: sales.filter((s) => s.status === "delivered").length,
+    revenue:   sales.reduce((acc, s) => acc + Number(s.amount), 0),
+  };
 }
