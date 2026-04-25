@@ -35,7 +35,12 @@ export interface UpdateSaleInput {
   seller_name?: string;
   thumb?: string;
 }
-
+export interface SalesStats {
+  totalSales: number;
+  totalRevenue: number;
+  byStatus: { status: string; count: number }[];
+  monthlyRevenue: { month: string; total: number }[];
+}
 // ─── GET SALES ────────────────────────────────────────────────────────────────
 
 export async function getSales(status?: string): Promise<{ sales: Sale[] }> {
@@ -140,5 +145,40 @@ export async function getSalesSummary(): Promise<{
     pending:   sales.filter((s) => s.status === "pending").length,
     delivered: sales.filter((s) => s.status === "delivered").length,
     revenue:   sales.reduce((acc, s) => acc + Number(s.amount), 0),
+  };
+}
+export async function getSalesStats(): Promise<SalesStats> {
+  const { data, error } = await supabase
+    .from("sales")
+    .select("amount, status, created_at");
+
+  if (error) throw new Error(error.message);
+
+  const sales = data ?? [];
+
+  // Agrupar por status para o Dashboard
+  const statusCounts = sales.reduce((acc: any, sale) => {
+    acc[sale.status] = (acc[sale.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const byStatus = Object.keys(statusCounts).map((status) => ({
+    status,
+    count: statusCounts[status],
+  }));
+
+  // Cálculo de receita total
+  const totalRevenue = sales.reduce((acc, s) => acc + Number(s.amount), 0);
+
+  return {
+    totalSales: sales.length,
+    totalRevenue,
+    byStatus,
+    monthlyRevenue: [
+      { 
+        month: new Date().toLocaleString('pt-BR', { month: 'long' }), 
+        total: totalRevenue // Simplificado para o mês atual
+      }
+    ],
   };
 }

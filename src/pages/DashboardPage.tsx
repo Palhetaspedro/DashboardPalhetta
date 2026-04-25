@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import { Card, SectionLabel, Button } from "../components/ui";
 import ProgressCircle from "../components/ProgressCircle";
 import CountdownTimer from "../components/CountdownTimer";
-import { OrderItem, SellerOrderItem } from "../components/OrderItem";
+import { OrderItem } from "../components/OrderItem";
 import { OrderStatus } from "../data/mockData";
-import { getSales, getSalesStats, Sale } from "../data/sales";
+import { getSales, getSalesStats, Sale, SalesStats } from "../data/sales";
 import CreateOrderModal from "../components/CreateOrderModal";
 
 export default function DashboardPage() {
@@ -15,42 +15,47 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const isBuyerView = user?.role === "buyer";
 
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats]           = useState<SalesStats | null>(null);
   const [recentSales, setRecentSales] = useState<Sale[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]       = useState(true);
 
   useEffect(() => {
     loadSales();
   }, [user?.id, user?.role]);
 
   const loadSales = () => {
+    setLoading(true);
     Promise.all([
       getSalesStats().catch(() => null),
-      getSales().catch(() => ({ sales: [] })),
-    ]).then(([s, r]) => {
-      setStats(s);
-      setRecentSales((r?.sales ?? []).slice(0, 5));
-    }).finally(() => setLoading(false));
+      getSales().catch(() => ({ sales: [] as Sale[] })),
+    ])
+      .then(([s, r]) => {
+        setStats(s);
+        setRecentSales((r?.sales ?? []).slice(0, 5));
+      })
+      .finally(() => setLoading(false));
   };
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: 40, color: theme.textSecondary }}>Carregando...</div>;
+    return (
+      <div style={{ textAlign: "center", padding: 40, color: theme.textSecondary }}>
+        Carregando...
+      </div>
+    );
   }
 
   const totalRevenue = stats?.totalRevenue ?? 0;
-  const totalSales = stats?.totalSales ?? 0;
+  const totalSales   = stats?.totalSales   ?? 0;
+  const concluded    = stats?.byStatus
+    ?.filter((s) => s.status === "delivered" || s.status === "paid")
+    .reduce((a, s) => a + s.count, 0) ?? 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
       {/* ── TOP ROW ─────────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 18,
-        }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
+
         {/* Summary card */}
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -70,7 +75,7 @@ export default function DashboardPage() {
               </h2>
               {stats?.monthlyRevenue?.length ? (
                 <span style={{ fontSize: 12, color: "#4ade80", fontWeight: 600 }}>
-                  ▲ {stats.monthlyRevenue[0].total} este mês
+                  ▲ {fmt(stats.monthlyRevenue[0].total)} este mês
                 </span>
               ) : (
                 <span style={{ fontSize: 12, color: theme.textSecondary }}>
@@ -80,13 +85,9 @@ export default function DashboardPage() {
             </div>
             <div
               style={{
-                width: 46,
-                height: 46,
-                borderRadius: 12,
+                width: 46, height: 46, borderRadius: 12,
                 background: "linear-gradient(135deg,#ede9fe,#dbeafe)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 22,
               }}
             >
@@ -96,11 +97,8 @@ export default function DashboardPage() {
 
           <div
             style={{
-              display: "flex",
-              gap: 20,
-              marginTop: 18,
-              paddingTop: 16,
-              borderTop: `1px solid ${theme.borderCol}`,
+              display: "flex", gap: 20, marginTop: 18,
+              paddingTop: 16, borderTop: `1px solid ${theme.borderCol}`,
             }}
           >
             <div>
@@ -115,15 +113,18 @@ export default function DashboardPage() {
             </div>
             <div>
               <div style={{ fontSize: 11, color: theme.textSecondary }}>Concluídos</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary }}>
-                {stats?.byStatus?.filter((s: any) => s.status === "delivered" || s.status === "paid").reduce((a: number, s: any) => a + s.count, 0) ?? 0}
-              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: theme.textPrimary }}>{concluded}</div>
             </div>
           </div>
         </Card>
 
         {/* Progress widget */}
-        <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
+        <Card
+          style={{
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", gap: 10,
+          }}
+        >
           <SectionLabel>{isBuyerView ? "Score de Compra" : "Desempenho"}</SectionLabel>
           <ProgressCircle pct={isBuyerView ? 78 : 91} />
           <div style={{ textAlign: "center" }}>
@@ -141,11 +142,8 @@ export default function DashboardPage() {
           <div
             style={{
               background: "linear-gradient(145deg,#7c3aed,#2563eb)",
-              borderRadius: 18,
-              padding: 22,
-              position: "relative",
-              overflow: "hidden",
-              color: "white",
+              borderRadius: 18, padding: 22,
+              position: "relative", overflow: "hidden", color: "white",
             }}
           >
             <div
@@ -162,27 +160,19 @@ export default function DashboardPage() {
                 background: "rgba(255,255,255,0.05)",
               }}
             />
-
             <p style={{ fontSize: 11.5, margin: "0 0 10px", opacity: 0.7, letterSpacing: "0.06em", textTransform: "uppercase" }}>
               Criar Pedido
             </p>
-
             <button
               onClick={openCreateOrder}
               style={{
-                width: "100%",
-                padding: "11px 0",
+                width: "100%", padding: "11px 0",
                 background: "rgba(255,255,255,0.2)",
                 border: "1px solid rgba(255,255,255,0.35)",
-                borderRadius: 12,
-                color: "white",
-                fontSize: 13.5,
-                fontWeight: 700,
-                cursor: "pointer",
-                backdropFilter: "blur(8px)",
-                fontFamily: "inherit",
-                letterSpacing: "0.03em",
-                transition: "all 0.2s",
+                borderRadius: 12, color: "white",
+                fontSize: 13.5, fontWeight: 700, cursor: "pointer",
+                backdropFilter: "blur(8px)", fontFamily: "inherit",
+                letterSpacing: "0.03em", transition: "all 0.2s",
               }}
             >
               ＋ Criar Pedido
@@ -194,21 +184,15 @@ export default function DashboardPage() {
             <CountdownTimer />
             <div
               style={{
-                marginTop: 14,
-                padding: "10px 12px",
-                borderRadius: 10,
-                background: theme.dark
-                  ? "rgba(139,92,246,0.1)"
-                  : "rgba(139,92,246,0.06)",
+                marginTop: 14, padding: "10px 12px", borderRadius: 10,
+                background: theme.dark ? "rgba(139,92,246,0.1)" : "rgba(139,92,246,0.06)",
                 border: `1px solid ${theme.borderCol}`,
               }}
             >
               <div style={{ fontSize: 12, color: theme.textSecondary }}>
                 Pedidos disponíveis agora
               </div>
-              <div
-                style={{ fontSize: 24, fontWeight: 800, color: theme.textPrimary, marginTop: 2 }}
-              >
+              <div style={{ fontSize: 24, fontWeight: 800, color: theme.textPrimary, marginTop: 2 }}>
                 {recentSales.length}{" "}
                 <span style={{ fontSize: 14, color: "#a78bfa", fontWeight: 500 }}>pedidos</span>
               </div>
@@ -223,32 +207,38 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ── ORDERS ─────────────────────────────────────────────── */}
+      {/* ── PEDIDOS RECENTES ──────────────────────────────────────── */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ margin: 0 }}>
-            <SectionLabel>
-              {isBuyerView ? "Pedidos Recentes" : "Pedidos Disponíveis"}
-            </SectionLabel>
-          </div>
+          <SectionLabel>
+            {isBuyerView ? "Pedidos Recentes" : "Pedidos Disponíveis"}
+          </SectionLabel>
           <Button variant="outline" size="sm">Ver Todos →</Button>
         </div>
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {recentSales.length === 0 ? (
             <div style={{ textAlign: "center", padding: "30px 0", color: theme.textSecondary, fontSize: 14 }}>
-              Nenhum pedido ainda. {isBuyerView ? "Faça seu primeiro pedido!" : "Aguardando pedidos..."}
+              {isBuyerView
+                ? "Nenhum pedido ainda. Faça seu primeiro pedido!"
+                : "Aguardando pedidos..."}
             </div>
           ) : (
             recentSales.map((o) => (
-              <OrderItem key={o.id} order={{
-                id: o.id,
-                product: o.product,
-                specs: o.specs,
-                status: o.status as OrderStatus,
-                price: o.amount,
-                thumb: o.thumb || "📦",
-                date: new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
-              }} />
+              <OrderItem
+                key={o.id}
+                order={{
+                  id:      o.id,
+                  product: o.product,
+                  specs:   o.specs,
+                  status:  o.status as OrderStatus,
+                  price:   o.amount,
+                  thumb:   o.thumb || "📦",
+                  date:    new Date(o.created_at).toLocaleDateString("pt-BR", {
+                    day: "2-digit", month: "short", year: "numeric",
+                  }),
+                }}
+              />
             ))
           )}
         </div>
