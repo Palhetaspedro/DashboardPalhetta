@@ -1,133 +1,205 @@
-#  TradeFlow DashboardPalhetta
+# 🛍️ DashboardPalhetta
 
-## 📖 About the Project
+> **Marketplace dashboard** para gerenciamento completo de fluxo comercial — com autenticação por roles, CRUD de produtos e pedidos, e painel administrativo.
 
-**TradeFlow Dashboard** is a modern and minimalist B2B management interface designed to simulate a real-world marketplace for industrial materials.
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-orange?style=flat-square)
+![Stack](https://img.shields.io/badge/stack-React%20%7C%20TypeScript%20%7C%20Supabase-7c3aed?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-The application allows users to switch between **Buyer** and **Seller** modes, providing different perspectives for managing orders, tracking performance, and exploring available opportunities.
-
-The main goal of this project is to deliver a **clean, premium, and intuitive SaaS-like experience**, focusing on UI quality, component architecture, and user experience.
-
----
-
-## ✨ Features
-
-* 🔄 Toggle between **Buyer** and **Seller** modes
-* 📊 Monthly performance overview
-* 📦 Orders list with dynamic status
-* ⚠️ Disputes management section
-* ⏱️ Available orders with countdown (Seller mode)
-* 🎯 Progress / ranking indicator
-* 🎨 Smooth animations and modern UI
-* 📱 Fully responsive design
+** Live Demo:** [dashboardpalhetta.vercel.app](https://dashboardpalhetta.vercel.app)  
+** Repositório:** [github.com/Palhetaspedro/DashboardPalhetta](https://github.com/Palhetaspedro/DashboardPalhetta)
 
 ---
 
-## 🧠 Concepts & Practices
+##  Screenshots
 
-This project focuses on real-world front-end best practices:
+| Dashboard (Comprador) | Pedidos | Produtos |
+|---|---|---|
+| ![dashboard](assets/Dashboard.png) | ![interface para criar pedidos](assets/ScoreVendas.png) | ![produtos](assets/Produtos.png) |
 
-* Scalable component architecture
-* Strong typing with TypeScript
-* Separation of concerns
-* Reusable UI components
-* Clean and consistent design system
-* UX-focused interactions and states
+##  Sobre o Projeto
 
----
+O **DashboardPalhetta** é um sistema de marketplace B2C com painel de controle completo. A plataforma conecta compradores e vendedores, oferecendo uma experiência personalizada por tipo de usuário — com diferentes permissões, visões e funcionalidades para cada role.
 
-## 🛠️ Tech Stack
-
-* React
-* TypeScript
-* Tailwind CSS
-* Framer Motion
+O sistema foi desenvolvido com foco em:
+- Separação clara de responsabilidades por role
+- UI responsiva e moderna com tema claro/escuro
+- Autenticação segura via Supabase Auth + JWT
+- Persistência de dados com PostgreSQL via Supabase
 
 ---
 
-## 📁 Project Structure
+##  Funcionalidades
+
+###  Comprador
+- Visualizar catálogo de produtos com filtros por categoria
+- Criar e gerenciar pedidos
+- Acompanhar status dos pedidos em tempo real
+- Visualizar histórico de compras e gastos
+- Score de comprador com ranking na plataforma
+
+###  Vendedor
+- Visualizar pedidos disponíveis para aceite
+- Gerenciar status de entregas
+- Painel com métricas de desempenho (pedidos aceitos, taxa de conclusão, avaliação)
+- Contador regressivo para próxima janela de pedidos
+
+###  Administrador
+- Herda todas as funcionalidades de Comprador e Vendedor
+- CRUD completo de produtos (criar, editar, excluir, visualizar)
+- Gerenciamento de disputas entre usuários
+- Visão global de todos os pedidos e usuários
+- Atualização de perfis e roles
+
+---
+
+##  Módulos do Sistema
+
+| Módulo        | Descrição                                              |
+|---------------|--------------------------------------------------------|
+| **Dashboard** | Visão geral com métricas, pedidos recentes e CTA       |
+| **Pedidos**   | Listagem, filtros por status e criação de novos pedidos|
+| **Produtos**  | Catálogo com CRUD completo e upload de imagem          |
+| **Disputas**  | Abertura e acompanhamento de disputas                  |
+| **Ajustes**   | Edição de perfil, preferências e configurações         |
+
+---
+
+##  Sistema de Roles
 
 ```
-src/
-  components/     # Reusable UI components (Button, Card, etc.)
-  features/       # Domain-based modules (orders, dashboard, etc.)
-  hooks/          # Custom hooks
-  services/       # API layer
-  types/          # Global types
-  pages/          # Main views
+Admin
+ ├── Gerenciar todos os usuários e perfis
+ ├── CRUD completo de produtos
+ ├── Ver e atualizar todos os pedidos
+ └── Gerenciar e resolver disputas
+
+Vendedor
+ ├── Ver pedidos disponíveis para aceite
+ ├── Atualizar status dos seus pedidos
+ └── Métricas de desempenho no painel
+
+Comprador
+ ├── Criar pedidos
+ ├── Acompanhar status dos próprios pedidos
+ └── Abrir disputas
 ```
 
 ---
 
-## ▶️ Getting Started
+##  Stack Tecnológica
 
-### 1. Clone the repository
+| Tecnologia          | Uso                                         |
+|---------------------|---------------------------------------------|
+| **React 18**        | Interface de usuário                        |
+| **TypeScript**      | Tipagem estática                            |
+| **Vite**            | Bundler e dev server                        |
+| **Supabase**        | Backend as a Service (Auth + PostgreSQL)    |
+| **PostgreSQL**      | Banco de dados relacional                   |
+| **Row Level Security (RLS)** | Controle de acesso por role no DB |
+| **Vercel**          | Deploy e hospedagem                         |
+
+---
+
+##  Modelagem do Banco de Dados
+
+```
+profiles          → Dados do usuário (name, role, plan, phone, bio)
+sales             → Pedidos (product, amount, status, buyer_id, seller_id)
+products          → Catálogo (name, price, specs, category, image, seller_id)
+disputes          → Disputas (reason, status, created_by)
+```
+
+### Políticas RLS implementadas
+- Comprador só acessa os próprios pedidos
+- Vendedor só acessa pedidos onde é o seller
+- Admin acessa todos os registros
+- Trigger automático cria perfil ao registrar usuário
+
+---
+
+##  Como Rodar Localmente
+
+### Pré-requisitos
+- Node.js 18+
+- Conta no [Supabase](https://supabase.com)
+
+### Passo a passo
 
 ```bash
-git clone https://github.com/your-username/tradeflow-dashboard.git
-```
+# 1. Clone o repositório
+git clone https://github.com/Palhetaspedro/DashboardPalhetta.git
+cd DashboardPalhetta
 
-### 2. Navigate to the project folder
-
-```bash
-cd tradeflow-dashboard
-```
-
-### 3. Install dependencies
-
-```bash
+# 2. Instale as dependências
 npm install
-```
 
-or
+# 3. Configure as variáveis de ambiente
+cp .env.example .env.local
+# Preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
 
-```bash
-yarn install
-```
+# 4. Execute o schema no Supabase
+# Acesse seu projeto no Supabase → SQL Editor
+# Cole e execute o conteúdo de supabase-schema.sql
 
----
-
-### 4. Run the development server
-
-```bash
+# 5. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-or
+### Variáveis de ambiente
 
-```bash
-yarn dev
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-anon-key
 ```
 
 ---
 
-### 5. Open in your browser
+##  Estrutura do Projeto
 
 ```
-http://localhost:5173
+src/
+├── components/        # Componentes reutilizáveis (UI, Navbar, Footer...)
+├── context/           # AuthContext — autenticação e estado global do usuário
+├── data/              # Camada de dados (sales.ts, disputes.ts, mockData.ts)
+├── hooks/             # Custom hooks (useApp, useInView...)
+├── lib/               # Cliente Supabase
+└── pages/             # Páginas da aplicação
+    ├── DashboardPage
+    ├── OrdersPage
+    ├── ProductsPage
+    ├── DisputesPage
+    ├── SellerAdminPage
+    └── SettingsPage
 ```
 
+##  Roadmap
+
+- [x] Autenticação com Supabase Auth
+- [x] Sistema de roles (Admin / Vendedor / Comprador)
+- [x] Dashboard com métricas por role
+- [x] CRUD de produtos com upload de imagem
+- [x] Criação e acompanhamento de pedidos
+- [x] Sistema de disputas
+- [x] Tema claro/escuro
+- [ ] Integração com gateway de pagamento
+- [ ] Notificações em tempo real (Supabase Realtime)
+- [ ] Chat entre comprador e vendedor
+- [ ] Exportação de relatórios (PDF/CSV)
+- [ ] App mobile (React Native)
+
 ---
 
-## 🚧 Future Improvements
+##  Autor
 
-* Backend integration (Node.js / API)
-* Authentication system (JWT)
-* Real-time updates
-* Advanced filtering and search
-* Dark mode support
+**Pedro Palheta**  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Pedro%20Palheta-0077B5?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/pedro-palheta-b81017321/)
+[![GitHub](https://img.shields.io/badge/GitHub-Palhetaspedro-181717?style=flat-square&logo=github)](https://github.com/Palhetaspedro)
 
 ---
 
-## 📌 Notes
 
-This project was built as part of my portfolio to demonstrate front-end skills, UI design sense, and ability to structure scalable applications.
 
----
-
-## 📫 Contact
-
-Feel free to reach out:
-
-* https://www.linkedin.com/in/pedro-palheta-b81017321/
-* https://github.com/Palhetaspedro
+<p align="center">
+  Feito com ☕ e TypeScript por <strong>@Palhetaspedro</strong>
+</p>
