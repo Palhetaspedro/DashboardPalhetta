@@ -1,24 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTheme, fmt } from "../hooks/useApp";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui";
-import { getSales, createSale } from "../data/sales";
+import { createSale } from "../data/sales";
 
-// ─── Product from catalog (in-memory for now, same as ProductsPage) ──────────
 const PRODUCTS = [
-  { name: "Sony A7 IV", specs: "33MP · Full-Frame · 4K60fps · Wi-Fi 6", price: 19_490, category: "Câmeras", emoji: "📷" },
-  { name: "MacBook Pro M4", specs: "16GB · 512GB · 14'' · ProMotion 120Hz", price: 18_999, category: "Computadores", emoji: "💻" },
-  { name: "iPhone 16 Pro", specs: "256GB · Titânio · A18 Pro · Camera 48MP", price: 9_299, category: "Mobile", emoji: "📱" },
-  { name: "DJI Air 3S", specs: "4K · 46min · Obstacle Avoidance", price: 7_890, category: "Câmeras", emoji: "🚁" },
-  { name: "Sony WH-1000XM6", specs: "ANC · 40h · Hi-Res · Bluetooth 5.3", price: 2_199, category: "Áudio", emoji: "🎧" },
-  { name: "Samsung OLED S95D", specs: '55" · 4K · 144Hz · Neural Quantum', price: 14_990, category: "TV & Vídeo", emoji: "📺" },
-  { name: "iPad Pro M4", specs: '13" · 256GB · OLED · Apple Pencil Pro', price: 12_490, category: "Mobile", emoji: "📲" },
-  { name: "DJI Osmo Pocket 4", specs: "4K120 · 3-Axis · Micro Sensor", price: 4_299, category: "Câmeras", emoji: "📸" },
+  { name: "Sony A7 IV",        specs: "33MP · Full-Frame · 4K60fps · Wi-Fi 6",        price: 19_490, category: "Câmeras",      emoji: "📷" },
+  { name: "MacBook Pro M4",    specs: "16GB · 512GB · 14'' · ProMotion 120Hz",         price: 18_999, category: "Computadores", emoji: "💻" },
+  { name: "iPhone 16 Pro",     specs: "256GB · Titânio · A18 Pro · Camera 48MP",       price:  9_299, category: "Mobile",       emoji: "📱" },
+  { name: "DJI Air 3S",        specs: "4K · 46min · Obstacle Avoidance",               price:  7_890, category: "Câmeras",      emoji: "🚁" },
+  { name: "Sony WH-1000XM6",   specs: "ANC · 40h · Hi-Res · Bluetooth 5.3",           price:  2_199, category: "Áudio",        emoji: "🎧" },
+  { name: "Samsung OLED S95D", specs: '55" · 4K · 144Hz · Neural Quantum',            price: 14_990, category: "TV & Vídeo",   emoji: "📺" },
+  { name: "iPad Pro M4",       specs: '13" · 256GB · OLED · Apple Pencil Pro',         price: 12_490, category: "Mobile",       emoji: "📲" },
+  { name: "DJI Osmo Pocket 4", specs: "4K120 · 3-Axis · Micro Sensor",                price:  4_299, category: "Câmeras",      emoji: "📸" },
 ];
 
 const CATEGORIES = ["Todos", ...Array.from(new Set(PRODUCTS.map((p) => p.category)))];
 
-export default function CreateOrderModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: () => void }) {
+export default function CreateOrderModal({
+  open,
+  onClose,
+  onSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
   const theme = useTheme();
   const { user } = useAuth();
 
@@ -29,6 +37,16 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
   const [qty, setQty] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ Bloqueia scroll do body enquanto modal está aberto
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   const filtered = PRODUCTS.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -45,10 +63,7 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
     setError("");
   };
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  const handleClose = () => { reset(); onClose(); };
 
   const handleSubmit = async () => {
     if (!selected || !user) return;
@@ -68,6 +83,7 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
       });
       reset();
       onSuccess();
+      onClose();
     } catch (err: unknown) {
       setError(String(err));
     } finally {
@@ -80,29 +96,51 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
   const modalBg = theme.dark ? "rgba(30,27,63,0.97)" : "rgba(255,255,255,0.97)";
 
   const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "8px 12px", borderRadius: 10,
+    width: "100%",
+    padding: "8px 12px",
+    borderRadius: 10,
     border: `1px solid ${theme.borderCol}`,
     background: theme.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
-    color: theme.textPrimary, fontSize: 13, fontFamily: "inherit",
-    outline: "none", boxSizing: "border-box",
+    color: theme.textPrimary,
+    fontSize: 13,
+    fontFamily: "inherit",
+    outline: "none",
+    boxSizing: "border-box",
   };
 
-  return (
+  // ✅ createPortal garante que o modal é renderizado direto no <body>,
+  //    escapando de qualquer stacking context do layout (footer, sidebar, etc.)
+  return createPortal(
     <div
       onClick={handleClose}
       style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+        position: "fixed",
+        inset: 0,
+        // ✅ zIndex altíssimo — fica acima de tudo
+        zIndex: 9999,
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto",
-          background: modalBg, borderRadius: 20, padding: 28,
-          border: `1px solid rgba(139,92,246,0.2)`,
+          width: "100%",
+          maxWidth: 520,
+          // ✅ maxHeight + overflowY: scroll interno no painel
+          maxHeight: "88vh",
+          overflowY: "auto",
+          background: modalBg,
+          borderRadius: 20,
+          padding: 28,
+          border: "1px solid rgba(139,92,246,0.2)",
           boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+          position: "relative",
+          zIndex: 10000,
         }}
       >
         {step === "select" ? (
@@ -132,8 +170,13 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
                     background: category === cat ? "linear-gradient(135deg,#7c3aed,#3b82f6)" : "transparent",
                     color: category === cat ? "white" : theme.textSecondary,
                     border: `1px solid ${category === cat ? "transparent" : theme.borderCol}`,
-                    borderRadius: 8, padding: "4px 12px", fontSize: 11,
-                    fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
+                    borderRadius: 8,
+                    padding: "4px 12px",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    transition: "all 0.15s",
                   }}
                 >
                   {cat}
@@ -150,8 +193,12 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
                     key={p.name}
                     onClick={() => { setSelected(p); setQty(1); }}
                     style={{
-                      display: "flex", alignItems: "center", gap: 12,
-                      padding: "10px 14px", borderRadius: 12, cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "10px 14px",
+                      borderRadius: 12,
+                      cursor: "pointer",
                       background: isSel
                         ? "rgba(124,58,237,0.12)"
                         : theme.dark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
@@ -190,9 +237,10 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   style={{
-                    width: 28, height: 28, borderRadius: 8, border: `1px solid ${theme.borderCol}`,
-                    background: "transparent", color: theme.textPrimary, fontSize: 16,
-                    cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
+                    width: 28, height: 28, borderRadius: 8,
+                    border: `1px solid ${theme.borderCol}`,
+                    background: "transparent", color: theme.textPrimary,
+                    fontSize: 16, cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}
                 >−</button>
@@ -202,9 +250,10 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
                 <button
                   onClick={() => setQty((q) => q + 1)}
                   style={{
-                    width: 28, height: 28, borderRadius: 8, border: `1px solid ${theme.borderCol}`,
-                    background: "transparent", color: theme.textPrimary, fontSize: 16,
-                    cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
+                    width: 28, height: 28, borderRadius: 8,
+                    border: `1px solid ${theme.borderCol}`,
+                    background: "transparent", color: theme.textPrimary,
+                    fontSize: 16, cursor: "pointer", fontFamily: "inherit", fontWeight: 700,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}
                 >＋</button>
@@ -216,19 +265,14 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-              <Button
-                variant="primary"
-                fullWidth
-                size="md"
-                onClick={() => selected && setStep("confirm")}
-              >
+              <Button variant="primary" fullWidth size="md" onClick={() => selected && setStep("confirm")}>
                 Continuar
               </Button>
               <Button variant="outline" size="md" onClick={handleClose}>Cancelar</Button>
             </div>
           </div>
         ) : (
-          /* ─── Confirmation step ─────────────────────────────────────── */
+          /* Confirmation step */
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: theme.textPrimary }}>
               Confirmar Pedido
@@ -281,6 +325,8 @@ export default function CreateOrderModal({ open, onClose, onSuccess }: { open: b
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    // ✅ Renderiza direto no document.body — fora de qualquer hierarquia de layout
+    document.body
   );
 }
